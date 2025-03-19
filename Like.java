@@ -57,6 +57,10 @@ public class Like {
 
             System.out.println("✅ Berhasil menyukai artikel #" + articleId);
 
+            // Publikasikan pemberitahuan via pub/sub
+            // Simulasi publish: memberitahukan penulis artikel bahwa artikelnya mendapat like baru
+            publishLikeNotification(articleId, likerEmail);
+
         } catch (Exception e) {
             System.err.println("❌ Terjadi kesalahan: " + e.getMessage());
         } finally {
@@ -70,5 +74,54 @@ public class Like {
                 System.err.println("❌ Gagal menutup koneksi: " + ex.getMessage());
             }
         }
+    }
+
+    // Simulasi pub/sub untuk notifikasi like
+    private static void publishLikeNotification(int articleId, String likerEmail) {
+        // Langkah 1: Ambil informasi penulis artikel (author_email) dari tabel articles
+        String authorEmail = getArticleAuthorEmail(articleId);
+
+        // Langkah 2: Kirim pemberitahuan ke penulis
+        if (authorEmail != null) {
+            // Simulasi proses pub/sub: kirim pemberitahuan kepada penulis artikel
+            System.out.println("📢 [Pub/Sub] Pemberitahuan: Artikel #" + articleId + " telah disukai oleh " + likerEmail);
+            System.out.println("✉️ Pemberitahuan dikirim ke penulis artikel: " + authorEmail);
+        }
+    }
+
+    // Mengambil email penulis artikel
+    private static String getArticleAuthorEmail(int articleId) {
+        String authorEmail = null;
+        Connection c = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            // Koneksi ke SQLite
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection("jdbc:sqlite:db2.sqlite3");
+
+            // Query untuk mendapatkan email penulis artikel
+            String sql = "SELECT author_email FROM articles WHERE id = ?";
+            stmt = c.prepareStatement(sql);
+            stmt.setInt(1, articleId);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                authorEmail = rs.getString("author_email");
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Terjadi kesalahan saat mengambil email penulis: " + e.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (c != null) c.close();
+            } catch (SQLException ex) {
+                System.err.println("❌ Gagal menutup koneksi: " + ex.getMessage());
+            }
+        }
+
+        return authorEmail;
     }
 }

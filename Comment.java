@@ -51,6 +51,9 @@ public class Comment {
 
             System.out.println("✅ Komentar berhasil ditambahkan pada artikel #" + articleId);
 
+            // Simulasi Pub/Sub: Pemberitahuan bahwa komentar baru telah ditambahkan
+            simulatePubSub(commenterEmail, articleId, commentText.toString().trim());
+
         } catch (Exception e) {
             System.err.println("❌ Terjadi kesalahan: " + e.getMessage());
         } finally {
@@ -62,5 +65,13 @@ public class Comment {
                 System.err.println("❌ Gagal menutup koneksi: " + ex.getMessage());
             }
         }
+    }
+
+    // Simulasi Pub/Sub dengan mencetak pemberitahuan
+    private static void simulatePubSub(String commenterEmail, int articleId, String commentText) {
+        // Menyimulasikan pemberitahuan ke sistem yang terpusat
+        System.out.println("🔔 [Pemberitahuan Pub/Sub] Komentar baru dari " + commenterEmail + " pada artikel #" + articleId + ": ");
+        System.out.println("    \"" + commentText + "\"");
+        System.out.println("    Komentar ini telah disimpan di sistem.");
     }
 }

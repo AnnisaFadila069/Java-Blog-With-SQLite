@@ -16,8 +16,10 @@ public class ViewComments {
         }
 
         Connection c = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        PreparedStatement checkArticleStmt = null;
+        PreparedStatement fetchCommentsStmt = null;
+        ResultSet articleRs = null;
+        ResultSet commentsRs = null;
 
         try {
             // Koneksi ke SQLite
@@ -26,39 +28,43 @@ public class ViewComments {
 
             // Cek apakah artikel ada
             String checkArticleSql = "SELECT title FROM articles WHERE id = ?";
-            stmt = c.prepareStatement(checkArticleSql);
-            stmt.setInt(1, articleId);
-            rs = stmt.executeQuery();
+            checkArticleStmt = c.prepareStatement(checkArticleSql);
+            checkArticleStmt.setInt(1, articleId);
+            articleRs = checkArticleStmt.executeQuery();
 
-            if (!rs.next()) {
+            if (!articleRs.next()) {
                 System.out.println("❌ Artikel dengan ID " + articleId + " tidak ditemukan.");
                 return;
             }
 
-            String articleTitle = rs.getString("title");
+            String articleTitle = articleRs.getString("title");
 
             // Menampilkan komentar dari artikel
-            String sql = "SELECT commenter_email, comment_text, commented_at FROM comments WHERE article_id = ? ORDER BY commented_at ASC";
-            stmt = c.prepareStatement(sql);
-            stmt.setInt(1, articleId);
-            rs = stmt.executeQuery();
+            String fetchCommentsSql = "SELECT commenter_email, comment_text, commented_at FROM comments WHERE article_id = ? ORDER BY commented_at ASC";
+            fetchCommentsStmt = c.prepareStatement(fetchCommentsSql);
+            fetchCommentsStmt.setInt(1, articleId);
+            commentsRs = fetchCommentsStmt.executeQuery();
 
             System.out.println("=======================================");
             System.out.println("💬 Komentar untuk Artikel: " + articleTitle + " (ID: " + articleId + ")");
             System.out.println("=======================================");
 
             boolean hasComments = false;
+            int commentCount = 0;
 
-            while (rs.next()) {
+            while (commentsRs.next()) {
                 hasComments = true;
-                System.out.println("👤 " + rs.getString("commenter_email"));
-                System.out.println("🕒 " + rs.getString("commented_at"));
-                System.out.println("💭 " + rs.getString("comment_text"));
+                commentCount++;
+                System.out.println("👤 " + commentsRs.getString("commenter_email"));
+                System.out.println("🕒 " + commentsRs.getString("commented_at"));
+                System.out.println("💭 " + commentsRs.getString("comment_text"));
                 System.out.println("---------------------------------------");
             }
 
             if (!hasComments) {
                 System.out.println("❌ Belum ada komentar pada artikel ini.");
+            } else {
+                System.out.println("📌 Total Komentar: " + commentCount);
             }
 
         } catch (Exception e) {
@@ -66,8 +72,10 @@ public class ViewComments {
         } finally {
             // Menutup koneksi
             try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
+                if (articleRs != null) articleRs.close();
+                if (commentsRs != null) commentsRs.close();
+                if (checkArticleStmt != null) checkArticleStmt.close();
+                if (fetchCommentsStmt != null) fetchCommentsStmt.close();
                 if (c != null) c.close();
             } catch (SQLException ex) {
                 System.err.println("❌ Gagal menutup koneksi: " + ex.getMessage());

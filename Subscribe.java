@@ -54,6 +54,10 @@ public class Subscribe {
 
             System.out.println("✅ Berhasil berlangganan ke blog " + blogAuthorEmail);
 
+            // Publikasikan pemberitahuan via pub/sub
+            // Simulasi publish: memberitahukan penulis blog bahwa ada pengguna baru yang berlangganan
+            publishSubscribeNotification(blogAuthorEmail, subscriberEmail);
+
         } catch (Exception e) {
             System.err.println("❌ Terjadi kesalahan: " + e.getMessage());
         } finally {
@@ -66,5 +70,12 @@ public class Subscribe {
                 System.err.println("❌ Gagal menutup koneksi: " + ex.getMessage());
             }
         }
+    }
+
+    // Simulasi pub/sub untuk notifikasi subscribe
+    private static void publishSubscribeNotification(String blogAuthorEmail, String subscriberEmail) {
+        // Langkah 1: Kirim pemberitahuan ke penulis blog
+        System.out.println("📢 [Pub/Sub] Pemberitahuan: Pengguna " + subscriberEmail + " telah berlangganan ke blog Anda.");
+        System.out.println("✉️ Pemberitahuan dikirim ke penulis blog: " + blogAuthorEmail);
     }
 }

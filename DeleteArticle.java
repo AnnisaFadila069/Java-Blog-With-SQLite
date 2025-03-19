@@ -41,7 +41,6 @@ public class DeleteArticle {
 
             // Hapus semua referensi terkait artikel
             String[] deleteQueries = {
-                "DELETE FROM inbox WHERE article_id=?",
                 "DELETE FROM comments WHERE article_id=?",
                 "DELETE FROM likes WHERE article_id=?",
                 "DELETE FROM saved_articles WHERE article_id=?",

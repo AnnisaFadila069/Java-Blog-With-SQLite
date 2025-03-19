@@ -40,12 +40,23 @@ public class ViewArticle {
 
             while (rs.next()) {
                 hasResults = true;
+                int articleId = rs.getInt("id");
+
                 System.out.println("=======================================");
-                System.out.println("📝 Artikel #" + rs.getInt("id"));
+                System.out.println("📝 Artikel #" + articleId);
                 System.out.println("✍️  Penulis  : " + rs.getString("author_email"));
                 System.out.println("📅 Tanggal   : " + rs.getString("created_at"));
                 System.out.println("📌 Judul     : " + rs.getString("title"));
                 System.out.println("📖 Konten    :\n" + rs.getString("content"));
+
+                // Tampilkan jumlah komentar untuk artikel ini
+                int commentCount = getCommentCount(c, articleId);
+                System.out.println("💬 Jumlah Komentar: " + commentCount);
+
+                // Tampilkan jumlah like untuk artikel ini
+                int likeCount = getLikeCount(c, articleId);
+                System.out.println("❤️ Jumlah Like: " + likeCount);
+
                 System.out.println("=======================================\n");
             }
 
@@ -65,5 +76,63 @@ public class ViewArticle {
                 System.err.println("❌ Gagal menutup koneksi: " + ex.getMessage());
             }
         }
+    }
+
+    // Fungsi untuk mendapatkan jumlah komentar dari sebuah artikel
+    private static int getCommentCount(Connection c, int articleId) {
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        int count = 0;
+
+        try {
+            String sql = "SELECT COUNT(*) FROM comments WHERE article_id = ?";
+            stmt = c.prepareStatement(sql);
+            stmt.setInt(1, articleId);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Gagal mendapatkan jumlah komentar: " + e.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+            } catch (SQLException ex) {
+                System.err.println("❌ Gagal menutup koneksi komentar: " + ex.getMessage());
+            }
+        }
+
+        return count;
+    }
+
+    // Fungsi untuk mendapatkan jumlah like dari sebuah artikel
+    private static int getLikeCount(Connection c, int articleId) {
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        int count = 0;
+
+        try {
+            String sql = "SELECT COUNT(*) FROM likes WHERE article_id = ?";
+            stmt = c.prepareStatement(sql);
+            stmt.setInt(1, articleId);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Gagal mendapatkan jumlah like: " + e.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+            } catch (SQLException ex) {
+                System.err.println("❌ Gagal menutup koneksi like: " + ex.getMessage());
+            }
+        }
+
+        return count;
     }
 }

@@ -43,21 +43,36 @@ public class PostArticle {
         generatedKeys.close();
         articleStmt.close();
 
-        // Kirim artikel ke inbox pengguna yang sudah subscribe
+        // Kirim artikel ke semua subscriber yang terdaftar untuk blog ini
         if (articleId != -1) {
-            String insertInboxSql = "INSERT INTO inbox(receiver_email, article_id, received_at) " +
-                        "SELECT subscriptions.subscriber_email, ?, ? FROM subscriptions WHERE blog_author_email = ?";
-            PreparedStatement inboxStmt = c.prepareStatement(insertInboxSql);
-            inboxStmt.setInt(1, articleId);
-            inboxStmt.setString(2, formattedDate);
-            inboxStmt.setString(3, email);
-            inboxStmt.executeUpdate();
-            inboxStmt.close();
+            // Menyiapkan query untuk mendapatkan email subscriber berdasarkan blog author email
+            String selectSubscribersSql = "SELECT subscriber_email FROM subscriptions WHERE blog_author_email = ?";
+            PreparedStatement subscribersStmt = c.prepareStatement(selectSubscribersSql);
+            subscribersStmt.setString(1, email);
+            ResultSet subscribersResult = subscribersStmt.executeQuery();
+
+            // Mengirim notifikasi ke setiap subscriber (simulasi pub/sub)
+            while (subscribersResult.next()) {
+                String subscriberEmail = subscribersResult.getString("subscriber_email");
+                // Pada titik ini, Anda dapat mengirimkan pemberitahuan ke subscriber,
+                // bisa menggunakan notifikasi push, email, atau mekanisme lainnya.
+                sendNotification(subscriberEmail, title, content.toString());
+            }
+
+            subscribersResult.close();
+            subscribersStmt.close();
         }
 
         // Tutup koneksi
         c.close();
 
-        System.out.println("✅ Artikel berhasil diposting dan dikirim ke inbox subscriber!");
+        System.out.println("✅ Artikel berhasil diposting dan dikirim ke subscriber!");
+    }
+
+    // Simulasi mengirim notifikasi ke subscriber
+    private static void sendNotification(String subscriberEmail, String title, String content) {
+        // Di dunia nyata, Anda bisa mengganti ini dengan sistem notifikasi push, email, dll.
+        System.out.println("Notifikasi dikirim ke " + subscriberEmail + ": Artikel baru diposting - " + title);
+        System.out.println("Konten Artikel: " + content);
     }
 }
