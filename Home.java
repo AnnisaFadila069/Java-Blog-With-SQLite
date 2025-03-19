@@ -11,19 +11,19 @@ public class Home {
             Class.forName("org.sqlite.JDBC");
             c = DriverManager.getConnection("jdbc:sqlite:db2.sqlite3");
 
-            // Query untuk mendapatkan semua artikel terbaru
+            // Query untuk mendapatkan artikel dengan jumlah like terbanyak
             String sql = "SELECT a.id, a.title, a.author_email, a.created_at, " +
-                         "       (SELECT COUNT(*) FROM likes WHERE article_id = a.id) AS like_count, " +
-                         "       (SELECT COUNT(*) FROM comments WHERE article_id = a.id) AS comment_count " +
+                         "       IFNULL((SELECT COUNT(*) FROM likes WHERE article_id = a.id), 0) AS like_count, " +
+                         "       IFNULL((SELECT COUNT(*) FROM comments WHERE article_id = a.id), 0) AS comment_count " +
                          "FROM articles a " +
-                         "ORDER BY a.created_at DESC " + 
+                         "ORDER BY like_count DESC, a.created_at DESC " + 
                          "LIMIT 10";
 
             stmt = c.createStatement();
             rs = stmt.executeQuery(sql);
 
             boolean hasResults = false;
-            System.out.println("📰 Timeline Artikel Terbaru:");
+            System.out.println("🔥 Artikel Terpopuler:");
             System.out.println("=======================================");
             
             while (rs.next()) {
@@ -38,7 +38,7 @@ public class Home {
             }
 
             if (!hasResults) {
-                System.out.println("❌ Tidak ada artikel terbaru.");
+                System.out.println("❌ Tidak ada artikel terpopuler.");
             }
 
         } catch (Exception e) {
